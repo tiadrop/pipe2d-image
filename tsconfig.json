@@ -1,0 +1,24 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "moduleResolution": "nodenext",
+    "target": "ES2018",
+    "module": "NodeNext",
+    "removeComments": true,
+    "declaration": true,
+  },
+  "include": ["lib/**/*.ts"],
+  "exclude": ["refraction-demo.ts"]
+}

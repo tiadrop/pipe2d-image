@@ -1,0 +1,20 @@
+{
+  "name": "@xtia/pipe2d-image",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "repository": {
+    "url": "https://github.com/tiadrop/pipe2d",
+    "type": "github"
+  },
+  "scripts": {
+    "prepublishOnly": "cp ../README.md .",
+    "postpublish": "rm README.md"
+  },
+  "dependencies": {
+    "@xtia/pipe2d": "^2.0.0",
+    "@xtia/rgba": "^1.0.0"
+  },
+  "description": "Leverage Pipe2D to read, transform and render images",
+  "author": "Aleta Lovelace",
+  "license": "MIT"
+}

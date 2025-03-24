@@ -1,0 +1,24 @@
+{
+  "name": "pipe2d-image",
+  "version": "1.0.0",
+  "description": "Leverage Pipe2D to read, transform and render images",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "keywords": [
+    "transformation",
+    "graphics",
+    "pipeline",
+    "canvas"
+  ],
+  "author": "Aleta",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "@xtia/pipe2d": "^2.0.0",
+    "@xtia/rgba": "^1.0.0"
+  }
+}
