@@ -88,7 +88,7 @@ export function createImagePipe(
                     return new RGBA(bytes.slice(idx, idx + 4)
                 );
             }
-        )//.stash(); // READD WHEN PIPE2D IS UPDATED
+        ).stash();
 
         return opts.nearest
             ? samplePipe.floorCoordinates()
