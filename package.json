@@ -1,6 +1,6 @@
 {
   "name": "pipe2d-image",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Leverage Pipe2D to read, transform and render images",
   "main": "index.js",
   "scripts": {
