@@ -1,10 +1,22 @@
 {
-  "name": "pipe2d-image",
+  "name": "@xtia/pipe2d-image",
   "version": "1.1.0",
   "description": "Leverage Pipe2D to read, transform and render images",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./lib": null
+  },
+  "repository": {
+    "url": "https://github.com/tiadrop/pipe2d-image",
+    "type": "github"
+  },
   "scripts": {
-    "build": "npx tsc"
+    "build": "tsc",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "transformation",
@@ -12,7 +24,12 @@
     "pipeline",
     "canvas"
   ],
-  "author": "Aleta",
+  "files": [
+    "lib/",
+    "README.md",
+    "LICENSE"
+  ],
+  "author": "Aleta Lovelace",
   "license": "MIT",
   "devDependencies": {
     "typescript": "^5.8.2"

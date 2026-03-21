@@ -11,14 +11,14 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "outDir": "./dist",
-    "rootDir": "./",
+    "outDir": "./lib",
+    "rootDir": "./src",
     "moduleResolution": "nodenext",
     "target": "ES2018",
     "module": "NodeNext",
     "removeComments": true,
     "declaration": true,
   },
-  "include": ["lib/**/*.ts"],
+  "include": ["src/**/*.ts"],
   "exclude": ["refraction-demo.ts"]
 }
