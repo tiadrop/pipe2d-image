@@ -1,6 +1,12 @@
 import { Pipe2D } from "@xtia/pipe2d";
 import { RGBA } from "@xtia/rgba";
 
+type RGBASource = {
+	width: number;
+	height: number;
+	get: (x: number, y: number) => RGBA;
+}
+
 /**
  * Creates a Pipe2D that samples an image
  * @param image 
@@ -21,16 +27,10 @@ export function createImagePipe(source: HTMLCanvasElement | OffscreenCanvas | Ca
 export function createImagePipe(source: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, options?: Partial<ImagePipeOptions>): Pipe2D<RGBA>
 /**
  * Creates a Pipe2D that samples a canvas' ImageData
- * @param image 
+ * @param data 
  * @param options 
  */
 export function createImagePipe(data: ImageData, options?: Partial<ImagePipeOptions>): Pipe2D<RGBA>
-/**
- * Rasterises an Pipe2D<RGBA> and creates a Pipe2D that samples the result
- * @param source
- * @param options 
- */
-export function createImagePipe(source: Pipe2D<RGBA>, options?: Partial<ImagePipeOptions>): Pipe2D<RGBA>
 /**
  * Loads an image from a URL and creates a Pipe2D that samples it
  * @param url
@@ -38,7 +38,7 @@ export function createImagePipe(source: Pipe2D<RGBA>, options?: Partial<ImagePip
  */
 export function createImagePipe(url: string, options?: Partial<ImagePipeOptions>): Promise<Pipe2D<RGBA>>
 export function createImagePipe(
-    source: string | Pipe2D<RGBA> | ImageData | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas| CanvasRenderingContext2D| OffscreenCanvasRenderingContext2D | CanvasElementContainer | ImageElementContainer,
+    source: string | ImageData | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas| CanvasRenderingContext2D| OffscreenCanvasRenderingContext2D | CanvasElementContainer | ImageElementContainer,
     options: Partial<ImagePipeOptions> = {}
 ): Pipe2D<RGBA> | Promise<Pipe2D<RGBA>> {
 
@@ -95,34 +95,32 @@ export function createImagePipe(
             : samplePipe.interpolate(interpolateRGBA);
     }
 
-    if (source instanceof Pipe2D) {
-        return createImagePipe(renderRGBAPipe(source), options);
-    }
-
     if ("element" in source) {
         return createImagePipe(source.element as any, options);
     }
+
+    if ((source as any) instanceof Pipe2D) throw new Error("Pipe2D<RGBA> image source support has been removed; use source.stash() instead");
 
     throw new Error("Invalid image source");
 };
 
 // no xywh
-export function renderRGBAPipe(source: Pipe2D<RGBA>): OffscreenCanvas
-export function renderRGBAPipe(source: Pipe2D<RGBA>, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, imageData: ImageData): void
-export async function renderRGBAPipe(source: Pipe2D<RGBA>, image: HTMLImageElement | ImageElementContainer): Promise<void>
+export function renderRGBAPipe(source: RGBASource): OffscreenCanvas
+export function renderRGBAPipe(source: RGBASource, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer): void
+export function renderRGBAPipe(source: RGBASource, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D): void
+export function renderRGBAPipe(source: RGBASource, imageData: ImageData): void
+export async function renderRGBAPipe(source: RGBASource, image: HTMLImageElement | ImageElementContainer): Promise<void>
 
 // xy
-export function renderRGBAPipe(source: Pipe2D<RGBA>, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer, dx: number, dy: number): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, dx: number, dy: number): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, imageData: ImageData, dx: number, dy: number): void
+export function renderRGBAPipe(source: RGBASource, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer, dx: number, dy: number): void
+export function renderRGBAPipe(source: RGBASource, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, dx: number, dy: number): void
+export function renderRGBAPipe(source: RGBASource, imageData: ImageData, dx: number, dy: number): void
 // xywh
-export function renderRGBAPipe(source: Pipe2D<RGBA>, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer, dx: number, dy: number, dw: number, dh: number): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, dx: number, dy: number, dw: number, dh: number): void
-export function renderRGBAPipe(source: Pipe2D<RGBA>, imageData: ImageData, dx: number, dy: number, dw: number, dh: number): void
+export function renderRGBAPipe(source: RGBASource, canvas: OffscreenCanvas | HTMLCanvasElement | CanvasElementContainer, dx: number, dy: number, dw: number, dh: number): void
+export function renderRGBAPipe(source: RGBASource, context: CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D, dx: number, dy: number, dw: number, dh: number): void
+export function renderRGBAPipe(source: RGBASource, imageData: ImageData, dx: number, dy: number, dw: number, dh: number): void
 export function renderRGBAPipe(
-    source: Pipe2D<RGBA>,
+    source: RGBASource,
     target?: ImageData | OffscreenCanvas | HTMLCanvasElement | CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | CanvasElementContainer | HTMLImageElement | ImageElementContainer,
     dx: number = 0,
     dy: number = 0,
