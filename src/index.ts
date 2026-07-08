@@ -138,7 +138,7 @@ export function renderRGBAPipe(
             for (let y = 0; y < target.height; y++) {
                 const idx = (y * target.width + x) * 4;
                 const py = Math.round((y / target.height) * source.height);
-                const pixel = source.get(px + .499, py + .499).asBytes;
+                const pixel = source.get(px, py).asBytes;
                 target.data.set(pixel, idx);
             }
         }
