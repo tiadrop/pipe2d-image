@@ -1,5 +1,5 @@
 import { Pipe2D } from "@xtia/pipe2d";
-import { RGBA } from "@xtia/rgba";
+import { parseRGBA, RGBA } from "@xtia/rgba";
 
 type RGBASource = {
 	width: number;
@@ -196,4 +196,84 @@ type ImagePipeOptions = {
 
 function interpolateRGBA(tl: RGBA, tr: RGBA, bl: RGBA, br: RGBA, x: number, y: number) {
     return tl.blend(tr,x).blend(bl.blend(br, x), y);
+}
+
+type HexColourContainer = {
+    hexCode: string;
+}
+
+function exclude<T>(source: T[], item: T) {
+    const idx = source.indexOf(item);
+    const copy = [...source];
+    copy.splice(idx, 1);
+    return copy;
+}
+
+const bayer16 = Pipe2D.fromFlatArrayXY([
+    0, 8, 2, 10,
+    12, 4, 14, 6,
+    3, 11, 1, 9,
+    15, 7, 13, 5,
+], 4, 4).map((v) => v / 15).stash().floorCoordinates();
+
+const bayer64 = Pipe2D.fromFlatArrayXY([
+    0, 32,  8, 40,  2, 34, 10, 42,
+   48, 16, 56, 24, 50, 18, 58, 26,
+   12, 44,  4, 36, 14, 46,  6, 38,
+   60, 28, 52, 20, 62, 30, 54, 22,
+    3, 35, 11, 43,  1, 33,  9, 41,
+   51, 19, 59, 27, 49, 17, 57, 25,
+   15, 47,  7, 39, 13, 45,  5, 37,
+   63, 31, 55, 23, 61, 29, 53, 21,
+], 8, 8).map(v => v / 63).stash().floorCoordinates();
+
+export interface DitherOptions {
+    /** Bayer matrix size. Default 64. */
+    level?: 16 | 64;
+    /** Spatial offset. Default 0. */
+    seed?: number;
+    /** 0 = flat quantisation, 1 = full dithering. Default 1. */
+    intensity?: number;
+}
+
+/**
+ * Creates a dithered version of an RGBA pipe using an ordered Bayer matrix.
+ * @param source Pipe to dither
+ * @param palette Palette to dither to
+ * @param options Dithering parameters
+ * @returns Dithered pipe
+ */
+export function dither(
+    source: Pipe2D<RGBA>,
+    palette: readonly (string | RGBA | HexColourContainer)[],
+    options: DitherOptions = {},
+): Pipe2D<RGBA> {
+    const { level = 64, seed = 0, intensity = 1 } = options;
+
+    if (palette.length === 0) throw new Error("dither requires a non-empty palette");
+
+    const rgbaPalette = palette.map(
+        (c) => (typeof c === "string" ? parseRGBA(c) : c instanceof RGBA ? c : parseRGBA(c.hexCode)),
+    );
+
+    const bayer = level === 16 ? bayer16 : bayer64;
+
+    return Pipe2D.combine(
+        source,
+        bayer.loop(source.width, source.height).translate(seed, seed)
+    ).map(([colour, rawThreshold]) => {
+        const threshold = 0.5 + (rawThreshold - 0.5) * intensity;
+
+        const nearest = colour.nearest(rgbaPalette);
+        const second = colour.nearest(exclude(rgbaPalette, nearest));
+
+        const upper = nearest.luma709 >= second.luma709 ? nearest : second;
+        const lower = nearest.luma709 >= second.luma709 ? second : nearest;
+        const range = upper.luma709 - lower.luma709;
+        if (range === 0) return nearest;
+
+        const target = (colour.luma709 - lower.luma709) / range;
+
+        return target > threshold ? upper : lower;
+    });
 }
