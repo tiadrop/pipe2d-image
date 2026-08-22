@@ -1,6 +1,6 @@
 {
   "name": "@xtia/pipe2d-image",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Leverage Pipe2D to read, transform and render images",
   "main": "lib/index.js",
   "exports": {
@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "@xtia/pipe2d": "^2.2.1",
-    "@xtia/rgba": "^1.5.1"
+    "@xtia/rgba": "^1.5.4"
   }
 }
