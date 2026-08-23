@@ -37,9 +37,10 @@ function renderCursorBackground(cursorX: number, cursorY: number) {
 
 ## API
 
-* `createImagePipe(source, options?): Pipe2D<RGBA>` creates a pipe that samples an image (`HTMLCanvasElement | HTMLImageElement | OffscreenCanvas | ImageData | Pipe2D<RGBA>` or 2D rendering context)
+* `createImagePipe(source, options?): Pipe2D<RGBA>` creates a pipe that samples an image (`HTMLCanvasElement | HTMLImageElement | OffscreenCanvas | ImageData` or 2D rendering context)
 * `async createImagePipe(url, options?): Pipe2D<RGBA>` loads an image from a URL and creates a a pipe that samples it
 * `renderRGBAPipe(target[, x, y[, dw, dh]])` renders a RGBAPipe to a canvas/canvas context/imageData.
 * `renderRGBAPipe(): OffscreenCanvas` renders a RGBAPipe to and returns a new OffscreenCanvas of the pipe's dimensions.
+* `dither(source, palette, options?]): Pipe2D<RGBA>` creates a pipe that applies ordered dithering to the source.
 
-`renderRGBAPipe()`'s target may be an HTMLImageElement, in which case the update may not occur synchronously (image elements always load asynchronously), so renderRGBAPipe() will return a Promise, resolved when the image is loaded.
+`renderRGBAPipe()`'s target may be an HTMLImageElement, in which case the update may not occur synchronously (image elements always load asynchronously), so renderRGBAPipe() will in such a case return a Promise, resolved when the image is loaded.
