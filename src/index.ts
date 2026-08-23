@@ -218,14 +218,14 @@ function exclude<T>(source: T[], item: T) {
 const bayer4 = Pipe2D.fromFlatArrayXY([
     0, 2,
     3, 1,
-], 2, 2).map((v) => v / 3).stash().floorCoordinates().loop();
+].map(v => v / 4), 2, 2).floorCoordinates().loop();
 
 const bayer16 = Pipe2D.fromFlatArrayXY([
     0, 8, 2, 10,
     12, 4, 14, 6,
     3, 11, 1, 9,
     15, 7, 13, 5,
-], 4, 4).map((v) => v / 15).stash().floorCoordinates().loop();
+].map(v => v / 16), 4, 4).floorCoordinates().loop();
 
 const bayer64 = Pipe2D.fromFlatArrayXY([
     0, 32,  8, 40,  2, 34, 10, 42,
@@ -236,7 +236,7 @@ const bayer64 = Pipe2D.fromFlatArrayXY([
    51, 19, 59, 27, 49, 17, 57, 25,
    15, 47,  7, 39, 13, 45,  5, 37,
    63, 31, 55, 23, 61, 29, 53, 21,
-], 8, 8).map(v => v / 63).stash().floorCoordinates().loop();
+].map(v => v / 64), 8, 8).floorCoordinates().loop();
 
 export interface DitherOptions {
     /** Bayer matrix size. Default 64. */
@@ -245,6 +245,7 @@ export interface DitherOptions {
     seed?: number;
     /** 0 = flat quantisation, 1 = full dithering. Default 1. */
     intensity?: number;
+    metric?: "euclidean" | "cie76"
 }
 
 /**
@@ -259,13 +260,15 @@ export function dither(
     palette: readonly (string | RGBA | HexColourContainer)[],
     options: DitherOptions = {},
 ): Pipe2D<RGBA> {
-    const { level = 64, seed = 0, intensity = 1 } = options;
+    const { level = 64, seed = 0, intensity = 1, metric = "euclidean" } = options;
 
     if (palette.length === 0) throw new Error("dither requires a non-empty palette");
 
     const rgbaPalette = palette.map(
         (c) => (typeof c === "string" ? parseRGBA(c) : c instanceof RGBA ? c : parseRGBA(c.hexCode)),
     );
+
+    if (rgbaPalette.length == 1) return Pipe2D.solid(rgbaPalette[0], source.width, source.height);
 
     const bayer = {
         4: bayer4,
@@ -277,8 +280,8 @@ export function dither(
         .map(([colour, rawThreshold]) => {
             const threshold = 0.5 + (rawThreshold - 0.5) * intensity;
 
-            const nearest = colour.nearest(rgbaPalette);
-            const second = colour.nearest(exclude(rgbaPalette, nearest));
+            const nearest = colour.nearest(rgbaPalette, metric);
+            const second = colour.nearest(exclude(rgbaPalette, nearest), metric);
 
             const [upper, lower] = nearest.luma709 >= second.luma709
                 ? [nearest, second]
