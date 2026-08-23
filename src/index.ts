@@ -7,6 +7,12 @@ type RGBASource = {
 	get: (x: number, y: number) => RGBA;
 }
 
+type Source2D<T> = {
+    width: number;
+    height: number;
+    get: (x: number, y: number) => T;
+}
+
 /**
  * Creates a Pipe2D that samples an image
  * @param image 
@@ -212,14 +218,14 @@ function exclude<T>(source: T[], item: T) {
 const bayer4 = Pipe2D.fromFlatArrayXY([
     0, 2,
     3, 1,
-], 2, 2).map((v) => v / 3).stash().floorCoordinates();
+], 2, 2).map((v) => v / 3).stash().floorCoordinates().loop();
 
 const bayer16 = Pipe2D.fromFlatArrayXY([
     0, 8, 2, 10,
     12, 4, 14, 6,
     3, 11, 1, 9,
     15, 7, 13, 5,
-], 4, 4).map((v) => v / 15).stash().floorCoordinates();
+], 4, 4).map((v) => v / 15).stash().floorCoordinates().loop();
 
 const bayer64 = Pipe2D.fromFlatArrayXY([
     0, 32,  8, 40,  2, 34, 10, 42,
@@ -230,7 +236,7 @@ const bayer64 = Pipe2D.fromFlatArrayXY([
    51, 19, 59, 27, 49, 17, 57, 25,
    15, 47,  7, 39, 13, 45,  5, 37,
    63, 31, 55, 23, 61, 29, 53, 21,
-], 8, 8).map(v => v / 63).stash().floorCoordinates();
+], 8, 8).map(v => v / 63).stash().floorCoordinates().loop();
 
 export interface DitherOptions {
     /** Bayer matrix size. Default 64. */
@@ -249,7 +255,7 @@ export interface DitherOptions {
  * @returns Dithered pipe
  */
 export function dither(
-    source: Pipe2D<RGBA>,
+    source: Source2D<RGBA>,
     palette: readonly (string | RGBA | HexColourContainer)[],
     options: DitherOptions = {},
 ): Pipe2D<RGBA> {
@@ -265,24 +271,24 @@ export function dither(
         4: bayer4,
         16: bayer16,
         64: bayer64
-    }[level];
+    }[level].translate(seed, seed);
 
-    return Pipe2D.combine(
-        source,
-        bayer.loop(source.width, source.height).translate(seed, seed)
-    ).map(([colour, rawThreshold]) => {
-        const threshold = 0.5 + (rawThreshold - 0.5) * intensity;
+    return Pipe2D.combine(source, bayer)
+        .map(([colour, rawThreshold]) => {
+            const threshold = 0.5 + (rawThreshold - 0.5) * intensity;
 
-        const nearest = colour.nearest(rgbaPalette);
-        const second = colour.nearest(exclude(rgbaPalette, nearest));
+            const nearest = colour.nearest(rgbaPalette);
+            const second = colour.nearest(exclude(rgbaPalette, nearest));
 
-        const upper = nearest.luma709 >= second.luma709 ? nearest : second;
-        const lower = nearest.luma709 >= second.luma709 ? second : nearest;
-        const range = upper.luma709 - lower.luma709;
-        if (range === 0) return nearest;
+            const [upper, lower] = nearest.luma709 >= second.luma709
+                ? [nearest, second]
+                : [second, nearest];
 
-        const target = (colour.luma709 - lower.luma709) / range;
+            const range = upper.luma709 - lower.luma709;
+            if (range === 0) return nearest;
 
-        return target > threshold ? upper : lower;
-    });
+            const target = (colour.luma709 - lower.luma709) / range;
+
+            return target > threshold ? upper : lower;
+        });
 }
