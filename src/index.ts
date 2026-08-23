@@ -209,6 +209,11 @@ function exclude<T>(source: T[], item: T) {
     return copy;
 }
 
+const bayer4 = Pipe2D.fromFlatArrayXY([
+    0, 2,
+    3, 1,
+], 2, 2).map((v) => v / 3).stash().floorCoordinates();
+
 const bayer16 = Pipe2D.fromFlatArrayXY([
     0, 8, 2, 10,
     12, 4, 14, 6,
@@ -229,7 +234,7 @@ const bayer64 = Pipe2D.fromFlatArrayXY([
 
 export interface DitherOptions {
     /** Bayer matrix size. Default 64. */
-    level?: 16 | 64;
+    level?: 4 | 16 | 64;
     /** Spatial offset. Default 0. */
     seed?: number;
     /** 0 = flat quantisation, 1 = full dithering. Default 1. */
@@ -256,7 +261,11 @@ export function dither(
         (c) => (typeof c === "string" ? parseRGBA(c) : c instanceof RGBA ? c : parseRGBA(c.hexCode)),
     );
 
-    const bayer = level === 16 ? bayer16 : bayer64;
+    const bayer = {
+        4: bayer4,
+        16: bayer16,
+        64: bayer64
+    }[level];
 
     return Pipe2D.combine(
         source,
